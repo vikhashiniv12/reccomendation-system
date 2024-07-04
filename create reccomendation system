@@ -1,0 +1,41 @@
+from surprise import Dataset, Reader, SVD
+from surprise.model_selection import train_test_split
+
+# Load the movielens-100k dataset (or any other dataset you have)
+data = Dataset.load_builtin('ml-100k')
+
+# Define the format of the dataset (user, item, rating)
+reader = Reader(rating_scale=(1, 5))
+
+# Load the dataset using the defined reader
+dataset = data.build_full_trainset()
+
+# Initialize the SVD algorithm
+algo = SVD()
+
+# Train the algorithm on the dataset
+algo.fit(dataset)
+
+# Example usage: Recommend items for a specific user
+user_id = str(196)  # Example user id from the dataset
+num_recommendations = 5
+
+# Get a list of all item ids
+item_ids = list(dataset.ir.keys())
+
+# Generate recommendations for the user
+user_recommendations = []
+for item_id in item_ids:
+    rating = algo.predict(user_id, item_id).est
+    user_recommendations.append((item_id, rating))
+
+# Sort recommendations by predicted rating
+user_recommendations.sort(key=lambda x: x[1], reverse=True)
+
+# Get top recommendations
+top_recommendations = user_recommendations[:num_recommendations]
+
+# Print top recommendations
+print(f"Top {num_recommendations} Recommendations for User {user_id}:")
+for i, (item_id, rating) in enumerate(top_recommendations, 1):
+    print(f"{i}: Item ID {item_id}, Predicted Rating: {rating:.2f}")
